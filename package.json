@@ -1,14 +1,14 @@
 {
-  "name": "@jsonhero/ts-node-package-template",
+  "name": "@jsonhero/json-schema-fns",
   "version": "0.0.1",
-  "description": "A template for creating a new TypeScript package",
-  "homepage": "https://github.com/jsonhero-io/ts-node-package-template",
+  "description": "Modern utility library and typescript typings for building JSON Schema documents",
+  "homepage": "https://github.com/jsonhero-io/json-schema-fns",
   "bugs": {
-    "url": "https://github.com/jsonhero-io/ts-node-package-template/issues"
+    "url": "https://github.com/jsonhero-io/json-schema-fns/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jsonhero-io/ts-node-package-template.git"
+    "url": "https://github.com/jsonhero-io/json-schema-fns.git"
   },
   "exports": "./lib/index.js",
   "types": "lib/index.d.ts",
@@ -26,6 +26,7 @@
     "test": "jest --runInBand --coverage",
     "test:badges": "npm t && jest-coverage-badges --output ./badges",
     "build": "rollup -c",
+    "compile": "tsc",
     "prepublishOnly": "npm run clean && npm run check-types && npm run format:check && npm run lint && npm test && npm run build",
     "lint": "eslint . --ext .ts",
     "lint-and-fix": "eslint . --ext .ts --fix",
@@ -39,8 +40,10 @@
   "author": "Author Name",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.2",
     "@types/jest": "^27.0.2",
+    "@types/lodash": "^4.14.178",
     "@types/node": "^16.11.7",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
@@ -70,5 +73,10 @@
     "hooks": {
       "pre-commit": "npm run prettier-format && npm run lint"
     }
+  },
+  "dependencies": {
+    "deepmerge": "^4.2.2",
+    "lodash.omit": "^4.5.0",
+    "ts-pattern": "^3.3.4"
   }
 }

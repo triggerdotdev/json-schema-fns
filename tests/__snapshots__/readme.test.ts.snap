@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Readme examples work 1`] = `
+Object {
+  "$comment": "This is just a preview",
+  "$defs": Object {
+    "phoneNumber": Object {
+      "pattern": "^[0-9]{3}-[0-9]{3}-[0-9]{4}$",
+      "type": "string",
+    },
+    "ukAddress": Object {
+      "properties": Object {
+        "postCode": Object {
+          "type": "string",
+        },
+      },
+      "required": Array [
+        "postCode",
+      ],
+      "type": "object",
+    },
+    "usAddress": Object {
+      "properties": Object {
+        "zipCode": Object {
+          "type": "string",
+        },
+      },
+      "required": Array [
+        "zipCode",
+      ],
+      "type": "object",
+    },
+  },
+  "$id": "/schemas/person",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": Object {
+    "items": Object {
+      "maximum": 5000,
+      "minimum": 0,
+      "type": "number",
+    },
+    "type": "array",
+  },
+  "default": Object {},
+  "description": "Attributes of a person object",
+  "examples": Array [
+    Object {
+      "email": "eric@stackhero.dev",
+      "name": "Eric",
+    },
+  ],
+  "maxProperties": 20,
+  "minProperties": 3,
+  "patternProperties": Object {
+    "^[A-Za-z]$": Object {
+      "type": "string",
+    },
+  },
+  "properties": Object {
+    "billingAddress": Object {
+      "oneOf": Array [
+        Object {
+          "$ref": "#/$defs/ukAddress",
+        },
+        Object {
+          "$ref": "#/$defs/usAddress",
+        },
+      ],
+    },
+    "email": Object {
+      "format": "email",
+      "type": "string",
+    },
+    "name": Object {
+      "type": "string",
+    },
+    "phoneNumber": Object {
+      "$ref": "#/$defs/phoneNumber",
+    },
+  },
+  "propertyNames": Object {
+    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+  },
+  "required": Array [
+    "name",
+  ],
+  "title": "Person Profile",
+  "type": "object",
+  "unevaluatedProperties": false,
+}
+`;
