@@ -10,6 +10,7 @@ export type {
   AnySchema,
   StringFormat,
   PropertiesSchema,
+  SchemaBuilder,
 } from "./2020";
 
 export { $schema, s } from "./2020";

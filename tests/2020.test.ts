@@ -557,6 +557,31 @@ describe("const and enums", () => {
   });
 });
 
+describe("nullables", () => {
+  test("Should allow a type to be null", () => {
+    expect(s.nullable(s.string()).toSchemaDocument()).toStrictEqual({
+      $schema,
+      type: ["string", "null"],
+    });
+
+    expect(s.nullable(s.string({ format: "email" })).toSchemaDocument()).toStrictEqual({
+      $schema,
+      type: ["string", "null"],
+      format: "email",
+    });
+
+    expect(
+      s.nullable(s.object({ properties: [s.property("foo", s.string())] })).toSchemaDocument(),
+    ).toStrictEqual({
+      $schema,
+      type: ["object", "null"],
+      properties: {
+        foo: { type: "string" },
+      },
+    });
+  });
+});
+
 describe("types", () => {
   test("Types to create object schemas", () => {
     const foo: ObjectSchema = {

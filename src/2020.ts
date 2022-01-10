@@ -163,7 +163,7 @@ export type NullSchema = BaseSchema & {
 
 export const $schema = "https://json-schema.org/draft/2020-12/schema";
 
-class SchemaBuilder<S extends Schema> {
+export class SchemaBuilder<S extends Schema> {
   schema: S;
 
   constructor(s: S) {
@@ -445,6 +445,27 @@ function boolean(options?: Omit<BooleanSchema, "type">): SchemaBuilder<BooleanSc
   });
 }
 
+function nullable(schema: SchemaBuilder<Schema>): SchemaBuilder<Schema> {
+  const nullableSchema = schema.toSchema();
+
+  if (
+    typeof nullableSchema === "boolean" ||
+    nullableSchema.type === "null" ||
+    typeof nullableSchema.type === "undefined"
+  ) {
+    return schema;
+  }
+
+  const type = Array.isArray(nullableSchema.type)
+    ? nullableSchema.type.concat(<const>"null")
+    : [nullableSchema.type, <const>"null"];
+
+  return new SchemaBuilder({
+    ...nullableSchema,
+    type,
+  });
+}
+
 function anyOf(...schemas: SchemaBuilder<Schema>[]): SchemaBuilder<Schema> {
   return new SchemaBuilder({
     anyOf: schemas.map((s) => s.toSchema()),
@@ -517,6 +538,14 @@ function enumerator(...values: any[]): SchemaBuilder<Schema> {
   });
 }
 
+function $false(): SchemaBuilder<Schema> {
+  return new SchemaBuilder(false);
+}
+
+function $true(): SchemaBuilder<Schema> {
+  return new SchemaBuilder(true);
+}
+
 export const s = {
   object,
   properties,
@@ -529,6 +558,7 @@ export const s = {
   number,
   nil,
   boolean,
+  nullable,
   anyOf,
   allOf,
   oneOf,
@@ -539,4 +569,6 @@ export const s = {
   ref,
   constant,
   enumerator,
+  $false,
+  $true,
 };
