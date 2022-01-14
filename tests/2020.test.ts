@@ -211,9 +211,7 @@ describe("objects", () => {
 
   test("it should support pattern properties", () => {
     expect(
-      s
-        .object({ patternProperties: [s.patternProperty("^[A-Za-z]$", s.string())] })
-        .toSchemaDocument(),
+      s.object({ properties: [s.patternProperty("^[A-Za-z]$", s.string())] }).toSchemaDocument(),
     ).toStrictEqual({
       $schema,
       type: "object",
@@ -483,6 +481,20 @@ describe("schema composition", () => {
     expect(s.not(s.string()).toSchemaDocument()).toStrictEqual({
       $schema,
       not: { type: "string" },
+    });
+  });
+
+  test("it should support concatenation two schemas together", () => {
+    const schema = s.concat(s.object(), s.allOf(s.object()));
+
+    expect(schema.toSchemaDocument()).toStrictEqual({
+      $schema,
+      type: "object",
+      allOf: [
+        {
+          type: "object",
+        },
+      ],
     });
   });
 });

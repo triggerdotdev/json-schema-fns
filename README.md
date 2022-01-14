@@ -93,8 +93,8 @@ s.object({
     s.property("email", s.string({ format: "email" })),
     s.property("phoneNumber", s.ref("phoneNumber")),
     s.property("billingAddress", s.oneOf(s.ref("ukAddress"), s.ref("usAddress"))),
+    s.patternProperty("^[A-Za-z]$", s.string()),
   ],
-  patternProperties: [s.patternProperty("^[A-Za-z]$", s.string())],
   additionalProperties: s.array({
     items: s.number({ minimum: 0, maximum: 5000 }),
   }),
@@ -208,17 +208,296 @@ Or if you want to import a specific dialect:
 import { s } from "json-schema-fns/2020";
 ```
 
-### `object`
+All builder methods return a `SchemaBuilder`, and you can generate the JSON schema created by the builder using `toSchemaDocument` like so
 
-### `array`
+```typescript
+s.object().toSchemaDocument();
+```
+
+Which will result in the following document
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object"
+}
+```
+
+If you don't want the `$schema` property, use `toSchema` instead:
+
+```typescript
+s.object().toSchema(); // { "type": "object" }
+```
+
+All builder methods also support the options in `AnnotationSchema`:
+
+```typescript
+s.object({
+  $id: "#/foobar",
+  $comment: "This is a comment",
+  default: {},
+  title: "FooBar Object Schema",
+  description: "This is the FooBar schema description",
+  examples: [{ foo: "bar" }],
+  deprecated: true,
+  readOnly: true,
+  writeOnly: false,
+}).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "object",
+  "$id": "#/foobar",
+  "$comment": "This is a comment",
+  "default": {},
+  "title": "FooBar Object Schema",
+  "description": "This is the FooBar schema description",
+  "examples": [{ "foo": "bar" }],
+  "deprecated": true,
+  "readOnly": true,
+  "writeOnly": false
+}
+```
+
+### `s.object(options: ObjectOptions)`
+
+Builds a schema of type `object`, accepting a single argument of type `ObjectOptions`
+
+#### `ObjectOptions.properties`
+
+An array of optional and required properties
+
+```typescript
+s.object({
+  properties: [
+    s.property("name", s.string()),
+    s.requiredProperty("email", s.string({ format: "email" })),
+  ],
+}).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["email"]
+}
+```
+
+You can also add [patternProperties](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties)
+
+```typescript
+s.object({ properties: [s.patternProperty("^S_", s.string())] }).toSchema();
+```
+
+which produces the schema
+
+```json
+{
+  "type": "object",
+  "patternProperties": {
+    "^S_": { "type": "string" }
+  }
+}
+```
+
+#### `ObjectOptions.additonalProperties`
+
+Add an [additonalProperties](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties) schema:
+
+```typescript
+s.object({ additionalProperties: s.number() }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "object",
+  "additionalProperties": {
+    "type": "number"
+  }
+}
+```
+
+#### `ObjectOptions.propertyNames`
+
+Add a [propertyNames](https://json-schema.org/understanding-json-schema/reference/object.html#property-names) pattern:
+
+```typescript
+s.object({ propertyNames: "^[A-Za-z_][A-Za-z0-9_]*$" }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "object",
+  "propertyNames": {
+    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+  }
+}
+```
+
+#### `ObjectOptions.minProperties` and `ObjectOptions.maxProperties`
+
+Validate the number of properties in an object using [min/maxProperties](https://json-schema.org/understanding-json-schema/reference/object.html#size)
+
+```typescript
+s.object({ minProperties: 4, maxProperties: 10 }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "object",
+  "minProperties": 4,
+  "maxProperties": 10
+}
+```
+
+#### `ObjectOptions.unevaluatedProperties`
+
+Specify the handling of [unevaluatedProperties](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties)
+
+```typescript
+s.object({ unevaluatedProperties: false }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "object",
+  "unevaluatedProperties": false
+}
+```
+
+### `s.array(options: ArrayOptions)`
+
+Builds a schema of type `array`, accepting a single argument of type `ArrayOptions`
+
+#### `ArrayOptions.items`
+
+Define the [items](https://json-schema.org/understanding-json-schema/reference/array.html#items) schema for an array:
+
+```typescript
+s.array({ items: s.string() }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "array",
+  "items": { "type": "string" }
+}
+```
+
+#### `ArrayOptions.minItems` and `ArrayOptions.maxItems`
+
+Define the array [length](https://json-schema.org/understanding-json-schema/reference/array.html#length)
+
+```typescript
+s.array({ contains: { schema: s.number(), min: 1, max: 3 }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "array",
+  "contains": { "type": "number" },
+  "minContains": 1,
+  "maxContains": 3
+}
+```
+
+#### `ArrayOptions.prefixItems`
+
+Allows you to perform [tuple validation](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation):
+
+```typescript
+s.array({ prefixItems: [s.string(), s.number()] }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "array",
+  "prefixItems": [{ "type": "string" }, { "type": "number" }]
+}
+```
+
+#### `ArrayOptions.unevaluatedItems`
+
+Define the schema for [unevaluatedItems](https://json-schema.org/understanding-json-schema/reference/array.html#unevaluated-items)
+
+```typescript
+s.array({ unevaluatedItems: s.object() }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "array",
+  "unevaluatedItems": { "type": "object" }
+}
+```
+
+#### `ArrayOptions.contains`
+
+Define the schema [contains](https://json-schema.org/understanding-json-schema/reference/array.html#contains)
+
+```typescript
+s.array({ contains: { schema: s.number(), min: 1, max: 3 }).toSchema();
+```
+
+Produces the schema
+
+```json
+{
+  "type": "array",
+  "contains": { "type": "number" },
+  "minContains": 1,
+  "maxContains": 3
+}
+```
 
 ### `string`
 
 ### `integer` and `number`
 
+### `boolean`
+
 ### `nil`
 
-### `boolean`
+### `nullable`
+
+### `anyOf` | `allOf` | `oneOf`
+
+### `ifThenElse` and `ifThen`
+
+### `not`
+
+### `def` and `ref`
+
+### `$const`
+
+### `$enumerator`
+
+### `$true` and `$false`
 
 ## Roadmap
 

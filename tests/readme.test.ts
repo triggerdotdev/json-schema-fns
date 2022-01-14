@@ -33,8 +33,8 @@ test("Readme examples work", () => {
       s.property("email", s.string({ format: "email" })),
       s.property("phoneNumber", s.ref("phoneNumber")),
       s.property("billingAddress", s.oneOf(s.ref("ukAddress"), s.ref("usAddress"))),
+      s.patternProperty("^[A-Za-z]$", s.string()),
     ],
-    patternProperties: [s.patternProperty("^[A-Za-z]$", s.string())],
     additionalProperties: s.array({
       items: s.number({ minimum: 0, maximum: 5000 }),
     }),
@@ -44,8 +44,6 @@ test("Readme examples work", () => {
     unevaluatedProperties: false,
     defs: [phoneNumber, usAddress, ukAddress],
   });
-
-  console.log(JSON.stringify(schema.toSchemaDocument(), null, 2));
 
   expect(schema.toSchemaDocument()).toMatchSnapshot();
 });

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import deepmerge from "deepmerge";
+import { access } from "fs";
 import omit from "lodash/omit";
 
 type TypeName = "string" | "number" | "integer" | "boolean" | "object" | "array" | "null";
@@ -198,7 +199,6 @@ const objectBuilder = (schema: Partial<ObjectSchema>): SchemaBuilder<ObjectSchem
 type ObjectOptions = {
   properties?: Array<SchemaBuilder<ObjectSchema>>;
   propertyNames?: string;
-  patternProperties?: Array<SchemaBuilder<ObjectSchema>>;
   additionalProperties?: SchemaBuilder<Schema>;
   minProperties?: number;
   maxProperties?: number;
@@ -208,11 +208,9 @@ type ObjectOptions = {
 
 function object(options?: ObjectOptions): SchemaBuilder<ObjectSchema> {
   const properties = options?.properties || [];
-  const patternProperties = options?.patternProperties || [];
 
   const additionalOptions = omit(options, [
     "properties",
-    "patternProperties",
     "propertyNames",
     "additionalProperties",
     "defs",
@@ -224,10 +222,6 @@ function object(options?: ObjectOptions): SchemaBuilder<ObjectSchema> {
   });
 
   for (const property of properties) {
-    schema.apply(property);
-  }
-
-  for (const property of patternProperties) {
     schema.apply(property);
   }
 
@@ -490,6 +484,26 @@ function not(schema: SchemaBuilder<Schema>): SchemaBuilder<Schema> {
   });
 }
 
+function concat(...schemas: SchemaBuilder<Schema>[]): SchemaBuilder<Schema> {
+  return new SchemaBuilder(
+    schemas.reduce((acc, s) => {
+      const schema = s.toSchema();
+
+      if (typeof acc === "boolean") {
+        if (typeof schema === "boolean") {
+          return acc || schema;
+        } else {
+          return schema;
+        }
+      } else if (typeof schema === "boolean") {
+        return acc;
+      }
+
+      return { ...acc, ...schema };
+    }, {} as Schema),
+  );
+}
+
 function ifThenElse(
   condition: SchemaBuilder<Schema>,
   then: SchemaBuilder<Schema>,
@@ -563,6 +577,7 @@ export const s = {
   allOf,
   oneOf,
   not,
+  concat,
   ifThenElse,
   ifThen,
   def,
